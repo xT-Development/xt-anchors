@@ -91,7 +91,7 @@ local anchorKey
 anchorKey = lib.addKeybind({
     name = 'boat_anchor',
     description = 'Toggle Boat Anchor',
-    defaultKey = 'N',
+    defaultKey = config.anchorKey,
     onReleased = function(self)
         toggleAnchor()
 
