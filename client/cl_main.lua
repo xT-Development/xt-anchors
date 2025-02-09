@@ -1,20 +1,19 @@
 local config = lib.load('config')
 local operating = false
 
-local function boolToStr(bool)
-    if bool then
-        return 'Lowered'
-    else
-        return 'Raised'
-    end
-end
+local GetEntityModel = GetEntityModel
+local IsThisModelABoat = IsThisModelABoat
+local NetworkGetNetworkIdFromEntity = NetworkGetNetworkIdFromEntity
 
 local function toggleAnchor()
     if operating or not cache.vehicle or cache.seat ~= -1 then return end
     if not IsThisModelABoat(GetEntityModel(cache.vehicle)) then return end
 
-    local state = Entity(cache.vehicle).state
+    local ent = Entity(cache.vehicle)
+    local state = ent.state
     if state then
+        local netId = NetworkGetNetworkIdFromEntity(cache.vehicle)
+
         operating = true
         config.playSound(cache.vehicle)
         if lib.progressCircle({
@@ -26,15 +25,12 @@ local function toggleAnchor()
             disable = { car = true },
         }) then
             operating = false
-            state:set('boat_anchor', not state.boat_anchor, true)
-
-            lib.notify({
-                title = ('Anchor %s'):format(boolToStr(state.boat_anchor))
-            })
+            TriggerServerEvent('xt-anchors:toggleAnchor', not state.boat_anchor, netId)
         end
     end
 end
 
+local DoesEntityExist = DoesEntityExist
 local DisableControlAction = DisableControlAction
 
 local function disableControlsIfAnchorDeployed()
@@ -55,6 +51,14 @@ local function disableControlsIfAnchorDeployed()
         end
     end)
 end
+
+local SetBoatAnchor = SetBoatAnchor
+local SetVehicleEngineOn = SetVehicleEngineOn
+local CanAnchorBoatHere_2 = CanAnchorBoatHere_2
+local IsBoatAnchoredAndFrozen = IsBoatAnchoredAndFrozen
+local SetBoatFrozenWhenAnchored = SetBoatFrozenWhenAnchored
+local GetIsVehicleEngineRunning = GetIsVehicleEngineRunning
+local NetworkGetEntityFromNetworkId = NetworkGetEntityFromNetworkId
 
 AddStateBagChangeHandler('boat_anchor', nil, function(bagName, _, value)
     local entity = tonumber(bagName:match('entity:(%d+)'))
